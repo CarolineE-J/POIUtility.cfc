@@ -1,5 +1,5 @@
 
-# Railo JAR files soltion on branch "railoFix".
+# Railo JAR files solution on branch "railoFix".
 
 
 ## Kinky Solutions POI ColdFusion Custom Tag
