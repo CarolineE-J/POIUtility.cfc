@@ -27,7 +27,7 @@ Originally, I thought deleting the old jar file would solve everything, and it t
 
 [Javaloader][1], made my [Mark Mandel][2], was suggested by quite a few people as you can define specifically where you want a jar file to be found. The only issue is the location of the jar files differ for each installation and OS. For example, I am on Ubuntu and my Railo jar files are located in /opt/railo/lib/ whereas a Window user's was located in C:/railo/lib.
 
-Using {railo-server}, I could locate the Railo files and back track to where I wanted the Javaloader to look for the files. This works across all Operating Systems I could get my hands on - Mac, Ubuntu and Windows.
+Using {railo-server}, I could locate the Railo files and back track to where I wanted the Javaloader to look for the jar(s). This works across all Operating Systems I could get my hands on - Mac, Ubuntu and Windows.
 
 Using Javaloader solved the whole issue I was having. I could still use Ben Nadel's code and only change a few lines to make it work with the Railo upgrade.
 
