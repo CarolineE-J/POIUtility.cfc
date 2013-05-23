@@ -6,6 +6,8 @@ By Caroline Espley-Jones
 The POIUtility.cfc is a ColdFusion component that helps you read Microsoft Excel files into ColdFusion 
 queries as well as convert ColdFusion queries into multi-sheet Microsoft Excel files.
 
+Only for Railo users.
+
 ## Issue
 
 Since the Railo upgrade (version 3 to 4), I noticed that POIUtility.cfc was not working the way it was originally. After much digging around and google-ing, I found it was due to the fact that, in Railo, there are two jar files with the same class:
