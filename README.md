@@ -1,164 +1,29 @@
 
-# Kinky Solutions POI ColdFusion Custom Tag
+# Railo fix for clashing jar files.
 
-by [Ben Nadel][1]
+By Caroline Espley-Jones
 
 The POIUtility.cfc is a ColdFusion component that helps you read Microsoft Excel files into ColdFusion 
 queries as well as convert ColdFusion queries into multi-sheet Microsoft Excel files.
 
-## Features
+## Issue
 
-* Optional Header Row.
-* Basic CSS style definitions for header, row, and alternating row.
-* Write single or multiple Excel sheets at one time.
-* Read entire workbook into array of sheets or read in single sheet.
+Since the Railo upgrade, I noticed that POIUtility.cfc was not working the way it was originally. After much digging around and google-ing, I found it was due to the fact that, in Railo, there are two jar files with the same class.
 
-## POI ColdFusion Custom Tag Features
+Jar 1: apache-poi.jar (The new jar file, recieved after the update).
+Jar 2: apache-poi-tm-extractors.jar (The old jar file, which remained there after the update).
 
-* Create Excel documents using ColdFusion custom tags.
-* Write Excel file to file server or to a ColdFusion variable (or both).
-* CSS control at the global, column, row, and cell levels (with proper cascading).
-* Date and Number mask support.
+The class that was being called was "HSSFWorkbook" (around line 881 in the CFC).
 
-These ColdFusion custom tags allow you to create native Microsoft Excel binary files. They create PRE-2007 compatible files. The following is a list of the currently supported tags and the current attributes.
-
-__NOTE__: All tags in the POI systems require the use of both an OPENING and CLOSING tag. If you leave out a closing tag (or self-closing tag), you will get unexpected results.
+Since the createObject() method searches for the class first (child-first), not caring which jar file it is located in, the CFC was finding the old class instead of the shiney new one and was throwing up all kinds of errors.
 
 
-## Document
+## Solution
 
-Name: [optional] If provided, will store a copy of the Excel file in a ByteArrayOutputStream that can easily be converted to a byte array and streamed to the browser using CFContent or written to the file system using CFFile.
+Originally, I thought deleting the old jar file would solve everything, and it turns out it did but that was not a permanent solution. For one, to make these changes on the servers I use, it would require digging into the *live* server and manually deleting jar files from the upgrade. Plus, when I upgrade Railo the next time, this file would most likely be included again, anyway.
 
-File: [optional] If provided, will store a copy of the Excel file at the given expanded file path.
+Javaloader was suggested by quite a few people as you can define specifically where you want a jar file to be found. The only issue is the location of the jar files differ for each installation and OS. For example, I am on Ubuntu and my Railo jar files are located in /opt/railo/lib/ whereas a Window user's was located in C:/railo/lib.
 
-Template: [optional] If provided, this will read in and use an existing Excel file as the base for the new file (it does not affect the template, only copies it's data). 
+Using {railo-server}, I could locate the installation files and back track to where I wanted the Javaloader to look for the files. This works accross all OS I could test - Mac, Ubuntu and Windows.
 
-Style: [optional] Sets default CSS styles for all cells in the document.
-
-__Note__: Name and File are optional, but ONE of them is required.
-
-
-## Classes
-
-No functional value other than containership at this time.
-
-
-## Class
-
-Name: The name of the class (to be used as a struct-key) holding the given CSS styles.
-
-Style: The CSS style for this class.
-
-Note: You can use the class name "@cell" to override the default cell style for the entire workbook.
-
-
-## Sheets
-
-No functional value other than containership at this time.
-
-
-## Sheet
-
-Name: The name of the sheet to be displayed in the tab at the bottom of the workbook. 
-
-FreezeRow: [optional] The one-based index of the row you want to freeze.
-
-FreezeColumn: [optional] The one-based index of the column you want to freeze.
-
-Orientation: [optional] The print orientation of the sheet. Can be portrait (default) or Landscape.
-
-Zoom: [optional] The default zoom of the sheet as a percentage (ex. 100%).
-
-
-## Columns
-
-No functional value other than containership at this time.
-This section is optional.
-
-
-## Column
-
-Index: [optional] The zero-based index of the column. By default, this will start at zero and increment for each column.
-
-Class: [optional] The class names (defined above) that should be applied to this column. This can be a single class or a space-delimited list of classes (to be taken in order).
-
-Style: [optional] The CSS styles that should be applied to this column.
-
-Freeze: [optional] Boolean value to determine if this column should be frozen in the document.
-
-
-## Row
-
-Index: [optional] The zero-based index of this row. By default, this will start at zero and increment for each row. If you set this manually, all subsequent rows will start after the previous one.
-
-Class: [optional] The class names (defined above) that should be applied to this row. This can be a single class or a space-delimited list of classes (to be taken in order).
-
-Style: [optional] The CSS styles that should be applied to this row.
-
-Freeze: [optional] Boolean value to determine if this row should be frozen in the document.
-
-
-## Cell
-
-Type: [optional] Type of data in the cell. By default, everything is a string. Currently, can also be Numeric, Date, or Formula.
-
-Index: [optional] The zero-based index of this cell. By default, this will start at zero and increment for each cell. If you set this manually, all subsequent cells in this row will start after the previous one.
-
-Value: [optional] The value to be used for the cell output. If this is not provided, then the GeneratedContent of the cell tag will be used (space between the opening and closing tags).
-
-ColSpan: [optional] Defaults to one; allows you to create merged cells in a horizontal way.
-
-NumberFormat: [optional] The number mask of the numeric cell. Only a limitted number of masks are available.
-
-DateFormat: [optoinal] The date mask of the date cell. Only a limited number of masks are avilable.
-
-Class: [optional] The class names (defined above) that should be applied to this cell. This can be a single class or a space-delimited list of classes (to be taken in order).
-
-Style: [optional] The CSS styles that should be applied to this cell.
-
-Alias: [optional] Creates a pointer to the given cell for use within another cell formula. When being referenced in a cell formula, use the @ sign (ex. "SUM( @Start:@End )").
-
-
-## Available Number Formatting Masks
-
-* "General"
-* "0"
-* "0.00"
-* "#,##0"
-* "#,##0.00"
-* "($#,##0_);($#,##0)"
-* "($#,##0_);\[Red\]($#,##0)"
-* "($#,##0.00);($#,##0.00)"
-* "($#,##0.00_);\[Red\]($#,##0.00)"
-* "0%"
-* "0.00%"
-* "0.00E+00"
-* "# ?/?"
-* "# ??/??"
-* "(#,##0_);\[Red\](#,##0)"
-* "(#,##0.00_);(#,##0.00)"
-* "(#,##0.00_);\[Red\](#,##0.00)"
-* "_(*#,##0_);_(*(#,##0);_(* \"-\"_);_(@_)"
-* "_($*#,##0_);_($*(#,##0);_($* \"-\"_);_(@_)"
-* "_(*#,##0.00_);_(*(#,##0.00);_(*\"-\"??_);_(@_)"
-* "_($*#,##0.00_);_($*(#,##0.00);_($*\"-\"??_);_(@_)"
-* "##0.0E+0"
-* "@" - This is text format.
-* "text" - Alias for "@"
-
-## Available Date Formatting Masks
-
-* "m/d/yy"
-* "d-mmm-yy"
-* "d-mmm"
-* "mmm-yy"
-* "h:mm AM/PM"
-* "h:mm:ss AM/PM"
-* "h:mm"
-* "h:mm:ss"
-* "m/d/yy h:mm"
-* "mm:ss"
-* "[h]:mm:ss"
-* "mm:ss.0"
-
-[1]: http://www.bennadel.com
+This solved the whole issue I was having. I could still use Ben Nadel's code and only change a few lines to make it work with the Railo upgrade.
