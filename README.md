@@ -14,7 +14,7 @@ Since the Railo upgrade (version 3 to 4), I noticed that POIUtility.cfc was not 
 
 Jar 1: apache-poi.jar (The new jar file, received after the upgrade).
 
-Jar 2: apache-poi-tm-extractors.jar (The old jar file, which remained there after the upgrade).
+Jar 2: apache-poi-tm-extractors.jar.
 
 The class that was being called was "HSSFWorkbook" (around line 881 in the CFC).
 
